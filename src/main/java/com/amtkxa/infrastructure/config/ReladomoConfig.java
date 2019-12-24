@@ -6,10 +6,10 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import com.amtkxa.infrastructure.database.DBConnectionManager;
+import com.amtkxa.infrastructure.database.DatasourceProperties;
 import com.gs.fw.common.mithra.MithraManager;
 import com.gs.fw.common.mithra.MithraManagerProvider;
 import com.gs.fw.common.mithra.mithraruntime.MithraRuntimeType;
@@ -25,30 +25,11 @@ import com.gs.fw.common.mithra.mithraruntime.PropertyType;
 @Configuration
 public class ReladomoConfig {
     private static int MAX_TRANSACTION_TIMEOUT = 60 * 1000; // (seconds)
+    private final DatasourceProperties properties;
 
-    @Value("${datasource.url}")
-    private String url;
-
-    @Value("${datasource.host}")
-    private String host;
-
-    @Value("${datasource.port}")
-    private String port;
-
-    @Value("${datasource.database}")
-    private String database;
-
-    @Value("${datasource.username}")
-    private String username;
-
-    @Value("${datasource.password}")
-    private String password;
-
-    @Value("${datasource.jdbc-driver-class-name}")
-    private String jdbcDriverClassName;
-
-    @Value("${datasource.timeZone}")
-    private String timeZone;
+    public ReladomoConfig(DatasourceProperties properties) {
+        this.properties = properties;
+    }
 
     @PostConstruct
     public void postConstruct() {
@@ -81,14 +62,14 @@ public class ReladomoConfig {
 
     private void addProperties(MithraRuntimeType mithraRuntimeType) {
         List<PropertyType> props = mithraRuntimeType.getConnectionManagers().get(0).getProperties();
-        props.add(makePropertyType(DBConnectionManager.JDBC_DRIVER_CLASS_NAME_KEY, this.jdbcDriverClassName));
-        props.add(makePropertyType(DBConnectionManager.URL_KEY, this.url));
-        props.add(makePropertyType(DBConnectionManager.TIMEZONE_KEY, this.timeZone));
-        props.add(makePropertyType(DBConnectionManager.HOST_KEY, this.host));
-        props.add(makePropertyType(DBConnectionManager.PORT_KEY, this.port));
-        props.add(makePropertyType(DBConnectionManager.DATABASE_KEY, this.database));
-        props.add(makePropertyType(DBConnectionManager.USERNAME_KEY, this.username));
-        props.add(makePropertyType(DBConnectionManager.PASSWORD_KEY, this.password));
+        props.add(makePropertyType(DBConnectionManager.JDBC_DRIVER_CLASS_KEY, properties.getJdbcDriverClass()));
+        props.add(makePropertyType(DBConnectionManager.URL_KEY, properties.getUrl()));
+        props.add(makePropertyType(DBConnectionManager.TIMEZONE_KEY, properties.getTimeZone()));
+        props.add(makePropertyType(DBConnectionManager.HOST_KEY, properties.getHost()));
+        props.add(makePropertyType(DBConnectionManager.PORT_KEY, properties.getPort()));
+        props.add(makePropertyType(DBConnectionManager.DATABASE_KEY, properties.getDatabase()));
+        props.add(makePropertyType(DBConnectionManager.USERNAME_KEY, properties.getUsername()));
+        props.add(makePropertyType(DBConnectionManager.PASSWORD_KEY, properties.getPassword()));
     }
 
     private PropertyType makePropertyType(String name, String value) {

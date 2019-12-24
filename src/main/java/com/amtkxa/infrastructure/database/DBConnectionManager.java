@@ -11,13 +11,13 @@ import com.gs.fw.common.mithra.connectionmanager.XAConnectionManager;
 import com.gs.fw.common.mithra.databasetype.DatabaseType;
 
 public class DBConnectionManager implements SourcelessConnectionManager {
-    public static final String JDBC_DRIVER_CLASS_NAME_KEY = "jdbcDriverClassName";
-    public static final String URL_KEY = "url";
     public static final String HOST_KEY = "host";
     public static final String PORT_KEY = "port";
     public static final String DATABASE_KEY = "database";
     public static final String USERNAME_KEY = "username";
     public static final String PASSWORD_KEY = "password";
+    public static final String JDBC_DRIVER_CLASS_KEY = "jdbcDriverClass";
+    public static final String URL_KEY = "url";
     public static final String TIMEZONE_KEY = "timeZone";
     protected static DBConnectionManager instance;
 
@@ -30,29 +30,29 @@ public class DBConnectionManager implements SourcelessConnectionManager {
     }
 
     private XAConnectionManager xaConnectionManager;
-    private String jdbcDriverClassName;
-    private String url;
     private String host;
     private String port;
     private String database;
     private String username;
     private String password;
+    private String jdbcDriverClassName;
+    private String url;
     private TimeZone timeZone;
 
     /**
      * Set the properties necessary to create a connection to database.
      *
-     * @param properties Properties defined in MithraRuntime XML file.
+     * @param properties Properties defined in application.yml.
      * @apiNote This method is called after instance initialization.
      */
     private void init(Properties properties) {
-        this.jdbcDriverClassName = properties.getProperty(JDBC_DRIVER_CLASS_NAME_KEY);
-        this.url = properties.getProperty(URL_KEY);
         this.host = properties.getProperty(HOST_KEY);
         this.port = properties.getProperty(PORT_KEY);
         this.database = properties.getProperty(DATABASE_KEY);
         this.username = properties.getProperty(USERNAME_KEY);
         this.password = properties.getProperty(PASSWORD_KEY);
+        this.jdbcDriverClassName = properties.getProperty(JDBC_DRIVER_CLASS_KEY);
+        this.url = properties.getProperty(URL_KEY);
         this.timeZone = TimeZone.getTimeZone(properties.getProperty(TIMEZONE_KEY));
         this.createConnectionManager();
     }
