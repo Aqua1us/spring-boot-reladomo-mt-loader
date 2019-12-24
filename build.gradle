@@ -1,7 +1,7 @@
 plugins {
-	id 'org.springframework.boot' version '2.2.3.BUILD-SNAPSHOT'
-	id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-	id 'java'
+    id 'org.springframework.boot' version '2.2.3.BUILD-SNAPSHOT'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'java'
 }
 
 group = 'com.amtkxa'
@@ -9,20 +9,81 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
 repositories {
-	mavenCentral()
-	maven { url 'https://repo.spring.io/milestone' }
-	maven { url 'https://repo.spring.io/snapshot' }
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
+}
+
+configurations {
+    reladomoGenTask
+}
+
+ext.reladomoVersion = '17.1.4'
+ext.mysqlConnectorVersion = '8.0.18'
+
+dependencies {
+    // Spring
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testImplementation 'org.springframework.batch:spring-batch-test'
+
+    // Reladomo
+    implementation "com.goldmansachs.reladomo:reladomo:$reladomoVersion"
+    implementation "com.goldmansachs.reladomo:reladomogen:$reladomoVersion"
+    implementation "com.goldmansachs.reladomo:reladomo-gen-util:$reladomoVersion"
+    testCompile "com.goldmansachs.reladomo:reladomo-test-util:$reladomoVersion"
+
+    // MySQL
+    implementation "mysql:mysql-connector-java:$mysqlConnectorVersion"
 }
 
 dependencies {
-	// implementation 'org.springframework.boot:spring-boot-starter-batch'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation('org.springframework.boot:spring-boot-starter-test') {
-		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-	}
-	testImplementation 'org.springframework.batch:spring-batch-test'
+    reladomoGenTask "com.goldmansachs.reladomo:reladomogen:$reladomoVersion"
+    reladomoGenTask "com.goldmansachs.reladomo:reladomo-gen-util:$reladomoVersion"
 }
 
+/**
+ * Generate Java source files file from the Reladomo object definition XML file.
+ */
+task genReladomo {
+    ant.taskdef(name: "genReladomo",
+            classpath: configurations.reladomoGenTask.asPath,
+            classname: "com.gs.fw.common.mithra.generator.MithraGenerator")
+    ant.genReladomo(xml: "$projectDir/src/main/resources/reladomo/model/ReladomoClassList.xml",
+            generateEcListMethod: "true",
+            generatedDir: "$buildDir/generated-sources/reladomo",
+            nonGeneratedDir: "$projectDir/src/main/java")
+}
+
+/**
+ * Generate a DDL files from the Reladomo object definition XML file.
+ */
+task genDdl {
+    ant.taskdef(name: "genDdl",
+            classpath: configurations.reladomoGenTask.asPath,
+            classname: "com.gs.fw.common.mithra.generator.dbgenerator.MithraDbDefinitionGenerator")
+    ant.genDdl(xml: "$projectDir/src/main/resources/reladomo/model/ReladomoClassList.xml",
+            generatedDir: "$projectDir/build/generated-db/sql",
+            databaseType: "postgres")
+}
+
+compileJava.dependsOn(genReladomo)
+compileJava.dependsOn(genDdl)
+
+sourceSets {
+    main {
+        java {
+            srcDir 'build/generated-sources/reladomo'
+        }
+        resources {
+            output.dir('build/generated-db', builtBy: genDdl)
+        }
+    }
+}
+
+
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }

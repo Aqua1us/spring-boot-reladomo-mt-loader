@@ -1,3 +1,3 @@
 CREATE DATABASE IF NOT EXISTS `test_db1` CHARACTER SET utf8 COLLATE utf8_general_ci;
-GRANT ALL ON test_db1.* TO 'test01'@'%';
+GRANT ALL ON test_db1.* TO 'testuser'@'%';
 FLUSH PRIVILEGES;

@@ -1,0 +1,9 @@
+datasource:
+  host: localhost
+  port: 13306
+  database: test_db1
+  username: testuser
+  password: testuser
+  jdbc-driver-class-name: com.mysql.cj.jdbc.Driver
+  url: jdbc:mysql://${datasource.host}:${datasource.port}/${datasource.database}?characterEncoding=utf8&useSSL=false
+  timeZone: Asia/Tokyo
