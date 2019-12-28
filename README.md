@@ -1,4 +1,6 @@
 # Spring Boot Reladomo MT Loader
+[![Build Status](https://travis-ci.com/amtkxa/spring-boot-reladomo-mt-loader.svg?branch=master)](https://travis-ci.com/amtkxa/spring-boot-reladomo-mt-loader)
+
 This is a sample application to try out Reladomo's Multi-Threaded matcher Loader (MT Loader).
 
 # Run the project
