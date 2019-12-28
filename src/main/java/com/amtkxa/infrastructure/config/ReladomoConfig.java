@@ -27,7 +27,7 @@ import com.gs.fw.common.mithra.mithraruntime.PropertyType;
  */
 @Configuration
 public class ReladomoConfig {
-    private static Logger logger = LoggerFactory.getLogger(ReladomoConfig.class.getName());
+    private static Logger log = LoggerFactory.getLogger(ReladomoConfig.class.getName());
     private static int MAX_TRANSACTION_TIMEOUT = 60 * 1000; // (seconds)
     private final DatasourceProperties properties;
 
@@ -38,17 +38,17 @@ public class ReladomoConfig {
     @PostConstruct
     public void postConstruct() {
         initializeReladomo();
-        loadReladomoXMLFromClasspath("reladomo/config/ReladomoRuntimeConfiguration.xml");
+        loadReladomoXMLFromClasspath(properties.getRuntimeConfigurationFile());
     }
 
     /**
      * Initialize Reladomo using MithraManager class.
      */
     public void initializeReladomo() {
-        logger.info("Transaction Timeout is " + MAX_TRANSACTION_TIMEOUT);
+        log.info("Transaction Timeout is " + MAX_TRANSACTION_TIMEOUT);
         MithraManager mithraManager = MithraManagerProvider.getMithraManager();
         mithraManager.setTransactionTimeout(MAX_TRANSACTION_TIMEOUT);
-        logger.info("Reladomo has been initialised.");
+        log.info("Reladomo has been initialised.");
     }
 
     /**
@@ -64,8 +64,8 @@ public class ReladomoConfig {
             MithraRuntimeType runtimeType = MithraManagerProvider.getMithraManager().parseConfiguration(is);
             addProperties(runtimeType);
             MithraManagerProvider.getMithraManager().initializeRuntime(runtimeType);
-            logger.info("Reladomo configuration file {} is now loaded. Connecting to {} ",
-                        filePath, properties.getUrl());
+            log.info("Reladomo configuration file {} is now loaded. Connecting to {} ",
+                     filePath, properties.getUrl());
         } catch (Exception e) {
             throw new ReladomoConfigurationException("Failed to initialize reladomo. " + e.getMessage());
         }

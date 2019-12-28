@@ -14,6 +14,7 @@ public class DatasourceProperties {
     private String jdbcDriverClass;
     private String url;
     private String timeZone;
+    private String runtimeConfigurationFile;
 
     public String getHost() {
         return host;
@@ -77,5 +78,13 @@ public class DatasourceProperties {
 
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
+    }
+
+    public String getRuntimeConfigurationFile() {
+        return runtimeConfigurationFile;
+    }
+
+    public void setRuntimeConfigurationFile(String runtimeConfigurationFile) {
+        this.runtimeConfigurationFile = runtimeConfigurationFile;
     }
 }

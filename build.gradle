@@ -20,6 +20,8 @@ configurations {
 
 ext.reladomoVersion = '17.1.4'
 ext.mysqlConnectorVersion = '8.0.18'
+ext.openApiVersion = '1.2.21'
+ext.h2Version = '1.4.200'
 
 dependencies {
     // Spring
@@ -34,14 +36,17 @@ dependencies {
     implementation "com.goldmansachs.reladomo:reladomogen:$reladomoVersion"
     implementation "com.goldmansachs.reladomo:reladomo-gen-util:$reladomoVersion"
     testCompile "com.goldmansachs.reladomo:reladomo-test-util:$reladomoVersion"
+    reladomoGenTask "com.goldmansachs.reladomo:reladomogen:$reladomoVersion"
+    reladomoGenTask "com.goldmansachs.reladomo:reladomo-gen-util:$reladomoVersion"
+
+    // Open API
+    implementation "org.springdoc:springdoc-openapi-ui:$openApiVersion"
 
     // MySQL
     implementation "mysql:mysql-connector-java:$mysqlConnectorVersion"
-}
 
-dependencies {
-    reladomoGenTask "com.goldmansachs.reladomo:reladomogen:$reladomoVersion"
-    reladomoGenTask "com.goldmansachs.reladomo:reladomo-gen-util:$reladomoVersion"
+    // Test
+    implementation "com.h2database:h2:$h2Version"
 }
 
 /**
