@@ -12,4 +12,11 @@ public class Customer extends CustomerAbstract {
     public Customer(Timestamp businessDate) {
         super(businessDate);
     }
+
+    public Customer(String name, String country, Timestamp businessDate) {
+        super(businessDate);
+        super.setName(name);
+        super.setCountry(country);
+    }
+
 }
