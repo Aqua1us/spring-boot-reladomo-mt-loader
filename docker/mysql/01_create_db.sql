@@ -14,7 +14,7 @@ ALTER TABLE object_sequence
 CREATE TABLE customer
 (
     customer_id          INT                                      NOT NULL,
-    NAME                 VARCHAR(64)                              NOT NULL,
+    name                 VARCHAR(64)                              NOT NULL,
     country              VARCHAR(48)                              NOT NULL,
     business_date_from   DATETIME(3)                              NOT NULL,
     business_date_to     DATETIME(3)                              NOT NULL,
