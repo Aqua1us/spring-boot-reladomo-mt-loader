@@ -4,5 +4,7 @@
   <ConnectionManager className="com.amtkxa.infrastructure.database.DBConnectionManager">
     <MithraObjectConfiguration className="com.amtkxa.domain.entity.ObjectSequence"
                                cacheType="partial" />
+    <MithraObjectConfiguration className="com.amtkxa.domain.entity.Customer"
+                               cacheType="partial" />
   </ConnectionManager>
 </MithraRuntime>
