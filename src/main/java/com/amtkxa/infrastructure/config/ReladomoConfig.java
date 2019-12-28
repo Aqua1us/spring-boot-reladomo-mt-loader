@@ -6,8 +6,11 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 
+import com.amtkxa.common.exception.ReladomoConfigurationException;
 import com.amtkxa.infrastructure.database.DBConnectionManager;
 import com.amtkxa.infrastructure.database.DatasourceProperties;
 import com.gs.fw.common.mithra.MithraManager;
@@ -24,6 +27,7 @@ import com.gs.fw.common.mithra.mithraruntime.PropertyType;
  */
 @Configuration
 public class ReladomoConfig {
+    private static Logger logger = LoggerFactory.getLogger(ReladomoConfig.class.getName());
     private static int MAX_TRANSACTION_TIMEOUT = 60 * 1000; // (seconds)
     private final DatasourceProperties properties;
 
@@ -41,22 +45,29 @@ public class ReladomoConfig {
      * Initialize Reladomo using MithraManager class.
      */
     public void initializeReladomo() {
+        logger.info("Transaction Timeout is " + MAX_TRANSACTION_TIMEOUT);
         MithraManager mithraManager = MithraManagerProvider.getMithraManager();
         mithraManager.setTransactionTimeout(MAX_TRANSACTION_TIMEOUT);
+        logger.info("Reladomo has been initialised.");
     }
 
     /**
      * Load Reladomo runtime configuration file.
      *
-     * @param fileName ReladomoRuntime XML file
+     * @param filePath ReladomoRuntime XML file
      */
-    private void loadReladomoXMLFromClasspath(String fileName) {
-        try (InputStream is = ReladomoConfig.class.getClassLoader().getResourceAsStream(fileName)) {
+    private void loadReladomoXMLFromClasspath(String filePath) {
+        try (InputStream is = ReladomoConfig.class.getClassLoader().getResourceAsStream(filePath)) {
+            if (is == null) {
+                throw new IOException("Reladomo configuration file not found. filePath: " + filePath);
+            }
             MithraRuntimeType runtimeType = MithraManagerProvider.getMithraManager().parseConfiguration(is);
             addProperties(runtimeType);
             MithraManagerProvider.getMithraManager().initializeRuntime(runtimeType);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to locate " + fileName + " in classpath");
+            logger.info("Reladomo configuration file {} is now loaded. Connecting to {} ",
+                        filePath, properties.getUrl());
+        } catch (Exception e) {
+            throw new ReladomoConfigurationException("Failed to initialize reladomo. " + e.getMessage());
         }
     }
 
