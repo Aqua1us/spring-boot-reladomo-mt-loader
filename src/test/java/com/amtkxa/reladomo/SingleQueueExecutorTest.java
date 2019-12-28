@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.amtkxa.common.exception.ReladomoMtLoaderException;
+import com.amtkxa.common.exception.ReladomoLoaderException;
 import com.amtkxa.domain.entity.Customer;
 import com.amtkxa.domain.entity.CustomerFinder;
 import com.amtkxa.domain.entity.CustomerList;
@@ -76,7 +76,7 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
             matcherThread.setFileDone();
             matcherThread.waitTillDone();
         } catch (Exception e) {
-            throw new ReladomoMtLoaderException("Failed to load data. " + e.getMessage(), e.getCause());
+            throw new ReladomoLoaderException("Failed to load data. " + e.getMessage(), e.getCause());
         }
 
         // Assert
