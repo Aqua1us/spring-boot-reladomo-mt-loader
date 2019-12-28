@@ -4,23 +4,23 @@
 
   <PackageName>com.amtkxa.domain.entity</PackageName>
   <ClassName>Customer</ClassName>
-  <DefaultTable>CUSTOMER</DefaultTable>
+  <DefaultTable>customer</DefaultTable>
 
-  <AsOfAttribute name="businessDate" fromColumnName="BUSINESS_DATE_FROM" toColumnName="BUSINESS_DATE_TO"
+  <AsOfAttribute name="businessDate" fromColumnName="business_date_from" toColumnName="business_date_to"
                  toIsInclusive="false"
                  isProcessingDate="false"
                  infinityDate="[com.gs.fw.common.mithra.util.DefaultInfinityTimestamp.getDefaultInfinity()]"
                  futureExpiringRowsExist="true"
   />
 
-  <AsOfAttribute name="processingDate" fromColumnName="PROCESSING_DATE_FROM" toColumnName="PROCESSING_DATE_TO"
+  <AsOfAttribute name="processingDate" fromColumnName="processing_date_from" toColumnName="processing_date_to"
                  toIsInclusive="false"
                  isProcessingDate="true"
                  infinityDate="[com.gs.fw.common.mithra.util.DefaultInfinityTimestamp.getDefaultInfinity()]"
                  defaultIfNotSpecified="[com.gs.fw.common.mithra.util.DefaultInfinityTimestamp.getDefaultInfinity()]"
   />
 
-  <Attribute name="customerId" javaType="int" columnName="CUSTOMER_ID" primaryKey="true"
+  <Attribute name="customerId" javaType="int" columnName="customer_id" primaryKey="true"
              primaryKeyGeneratorStrategy="SimulatedSequence">
     <SimulatedSequence sequenceName="Customer"
                        sequenceObjectFactoryName="com.amtkxa.infrastructure.reladomo.ObjectSequenceObjectFactory"
@@ -30,8 +30,7 @@
                        incrementSize="1" />
   </Attribute>
   <Attribute name="name" javaType="String"
-             columnName="NAME" nullable="false" maxLength="64" />
+             columnName="name" nullable="false" maxLength="64" />
   <Attribute name="country" javaType="String"
-             columnName="COUNTRY" nullable="false" maxLength="48" />
-
+             columnName="country" nullable="false" maxLength="48" />
 </MithraObject>
