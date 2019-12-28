@@ -1,5 +1,6 @@
 package com.amtkxa.reladomo;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.Timestamp;
@@ -14,8 +15,8 @@ import com.amtkxa.domain.entity.Customer;
 import com.amtkxa.domain.entity.CustomerFinder;
 import com.amtkxa.domain.entity.CustomerList;
 import com.gs.fw.common.mithra.extractor.Extractor;
-import com.gs.fw.common.mithra.finder.Operation;
 import com.gs.fw.common.mithra.mtloader.MatcherThread;
+import com.gs.fw.common.mithra.util.QueueExecutor;
 import com.gs.fw.common.mithra.util.SingleQueueExecutor;
 
 public class SingleQueueExecutorTest extends AbstractReladomoTest {
@@ -38,22 +39,20 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
     }
 
     private CustomerList getDbRecords() {
-        Operation businessDate = CustomerFinder.businessDate().equalsEdgePoint();
-        Operation processingDate = CustomerFinder.processingDate().equalsInfinity();
         return CustomerFinder.findMany(
                 CustomerFinder.all()
-                              .and(businessDate)
-                              .and(processingDate));
+                              .and(CustomerFinder.businessDate().equalsEdgePoint())
+                              .and(CustomerFinder.processingDate().equalsInfinity())
+        );
     }
 
     private Timestamp getTimestamp(String date) throws ParseException {
         return new Timestamp(format.parse(date).getTime());
     }
 
-    @Test
-    public void testDataLoad() {
+    protected QueueExecutor loadData() {
         try {
-            SingleQueueExecutor singleQueueExecutor = new SingleQueueExecutor(
+            QueueExecutor queueExecutor = new SingleQueueExecutor(
                     NUMBER_OB_THREADS,
                     CustomerFinder.customerId().ascendingOrderBy(),
                     BATCH_SIZE,
@@ -62,7 +61,7 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
             );
 
             MatcherThread<Customer> matcherThread = new MatcherThread<>(
-                    singleQueueExecutor,
+                    queueExecutor,
                     new Extractor[] { CustomerFinder.customerId() }
             );
             matcherThread.start();
@@ -75,9 +74,15 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
             matcherThread.addFileRecords(getInputData());
             matcherThread.setFileDone();
             matcherThread.waitTillDone();
+            return queueExecutor;
         } catch (Exception e) {
             throw new ReladomoMTLoaderException("Failed to load data. " + e.getMessage(), e.getCause());
         }
+    }
+
+    @Test
+    public void testLoadData() {
+        QueueExecutor queueExecutor = loadData();
 
         // Whatever is in Output Set but not in Input Set will be closed out (terminated).
         CustomerList customerList = getDbRecords();
@@ -89,8 +94,10 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
                               .and(CustomerFinder.businessDate().equalsEdgePoint())
                               .and(CustomerFinder.processingDate().equalsInfinity())
         );
-        assertEquals("Ava", customer7.getName());
-        assertEquals("JPN", customer7.getCountry()); // Updated from USD to JPN
+        assertAll("Check updated customer data",
+                  () -> assertEquals("Ava", customer7.getName()),
+                  () -> assertEquals("JPN", customer7.getCountry()) // Updated from USD to JPN
+        );
 
         // Whatever in in Input Set but not in Output Set will be inserted
         Customer customer8 = CustomerFinder.findOne(
@@ -98,7 +105,15 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
                               .and(CustomerFinder.businessDate().equalsEdgePoint())
                               .and(CustomerFinder.processingDate().equalsInfinity())
         );
-        assertEquals("Arthur", customer8.getName()); // Inserted new customer
-        assertEquals("USA", customer8.getCountry());
+        assertAll("Check inserted customer data",
+                  () -> assertEquals("Arthur", customer8.getName()),
+                  () -> assertEquals("USA", customer8.getCountry())
+        );
+
+        assertAll("Check the count of inserts, updates, terminates",
+                  () -> assertEquals(1, queueExecutor.getTotalInserts()),
+                  () -> assertEquals(1, queueExecutor.getTotalUpdates()),
+                  () -> assertEquals(6, queueExecutor.getTotalTerminates())
+        );
     }
 }
