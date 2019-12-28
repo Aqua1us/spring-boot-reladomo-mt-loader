@@ -12,9 +12,7 @@ public abstract class AbstractReladomoTest {
     private static Logger LOGGER = LoggerFactory.getLogger(AbstractReladomoTest.class);
     private MithraTestResource mithraTestResource;
 
-    protected String[] getTestDataFilenames() {
-        return new String[] {};
-    }
+    protected abstract String[] getTestDataFilenames();
 
     protected String getMithraConfigXmlFilename() {
         return "reladomo/config/TestReladomoRuntimeConfiguration.xml";

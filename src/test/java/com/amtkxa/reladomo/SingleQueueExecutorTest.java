@@ -20,25 +20,25 @@ import com.gs.fw.common.mithra.util.SingleQueueExecutor;
 
 public class SingleQueueExecutorTest extends AbstractReladomoTest {
     private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static int NUMBER_OB_THREADS = 1;
-    private static int BATCH_SIZE = 1;
-    private static int INSERT_THREADS = 1;
+    private static int NUMBER_OB_THREADS = 2;
+    private static int BATCH_SIZE = 5;
+    private static int INSERT_THREADS = 3;
+
+    @Override
+    public String[] getTestDataFilenames() {
+        return new String[] { "testdata/customer_data.txt" };
+    }
 
     private List<Customer> getInputData() throws ParseException {
-        Timestamp businessDate = getTimestamp("2019-12-01 00:00:00");
+        Timestamp businessDate = getTimestamp("2019-12-05 00:00:00");
         CustomerList customerList = new CustomerList();
-        customerList.add(new Customer("Liam", "USA", businessDate));
-        customerList.add(new Customer("Emma", "USA", businessDate));
-        customerList.add(new Customer("Noah", "USA", businessDate));
-        customerList.add(new Customer("Olivia", "USA", businessDate));
-        customerList.add(new Customer("William", "USA", businessDate));
-        customerList.add(new Customer("Ava", "USA", businessDate));
-        customerList.add(new Customer("James", "USA", businessDate));
+        customerList.add(new Customer(7, "Ava", "JPN", businessDate));
+        customerList.add(new Customer(8, "Arthur", "USA", businessDate));
         return customerList;
     }
 
-    private CustomerList getDbRecords() throws ParseException {
-        Operation businessDate = CustomerFinder.businessDate().eq(getTimestamp("2019-12-01 00:00:00"));
+    private CustomerList getDbRecords() {
+        Operation businessDate = CustomerFinder.businessDate().equalsEdgePoint();
         Operation processingDate = CustomerFinder.processingDate().equalsInfinity();
         return CustomerFinder.findMany(
                 CustomerFinder.all()
@@ -51,7 +51,7 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
     }
 
     @Test
-    public void testDataLoad() throws ParseException {
+    public void testDataLoad() {
         try {
             SingleQueueExecutor singleQueueExecutor = new SingleQueueExecutor(
                     NUMBER_OB_THREADS,
@@ -79,8 +79,26 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
             throw new ReladomoMTLoaderException("Failed to load data. " + e.getMessage(), e.getCause());
         }
 
-        // Assert
+        // Whatever is in Output Set but not in Input Set will be closed out (terminated).
         CustomerList customerList = getDbRecords();
-        assertEquals(customerList.count(), 7);
+        assertEquals(2, customerList.count());
+
+        // Whatever is in the intersection, will be updated (but only if something changed)
+        Customer customer7 = CustomerFinder.findOne(
+                CustomerFinder.customerId().eq(7)
+                              .and(CustomerFinder.businessDate().equalsEdgePoint())
+                              .and(CustomerFinder.processingDate().equalsInfinity())
+        );
+        assertEquals("Ava", customer7.getName());
+        assertEquals("JPN", customer7.getCountry()); // Updated from USD to JPN
+
+        // Whatever in in Input Set but not in Output Set will be inserted
+        Customer customer8 = CustomerFinder.findOne(
+                CustomerFinder.customerId().eq(8)
+                              .and(CustomerFinder.businessDate().equalsEdgePoint())
+                              .and(CustomerFinder.processingDate().equalsInfinity())
+        );
+        assertEquals("Arthur", customer8.getName()); // Inserted new customer
+        assertEquals("USA", customer8.getCountry());
     }
 }

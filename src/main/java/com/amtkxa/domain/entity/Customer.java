@@ -19,4 +19,11 @@ public class Customer extends CustomerAbstract {
         super.setCountry(country);
     }
 
+    public Customer(int customerId, String name, String country, Timestamp businessDate) {
+        super(businessDate);
+        super.setCustomerId(customerId);
+        super.setName(name);
+        super.setCountry(country);
+    }
+
 }
