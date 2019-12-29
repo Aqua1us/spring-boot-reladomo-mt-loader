@@ -5,13 +5,22 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.amtkxa.common.exception.BadRequestException;
 
 public class DateUtil {
+    private static List<String> patterns = Arrays.asList(
+            "yyyy-MM-dd HH:mm:ss[.SSS]",
+            "yyyy-MM-dd",
+            "yyyy/MM/dd",
+            "yyyyMMdd"
+    );
+
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
-            "[yyyy-MM-dd HH:mm:ss[.SSS]]" +
-            "[yyyy-MM-dd]" +
-            "[yyyy/MM/dd]" +
-            "[yyyyMMdd]"
+            patterns.stream().collect(Collectors.joining("][", "[", "]"))
     );
 
     /**
@@ -27,7 +36,17 @@ public class DateUtil {
         try {
             return Timestamp.valueOf(LocalDateTime.parse(datetime, formatter));
         } catch (DateTimeParseException e) {
+            return parseStartOfDateTime(datetime);
+        }
+    }
+
+    public static Timestamp parseStartOfDateTime(String datetime) {
+        try {
             return Timestamp.valueOf(LocalDate.parse(datetime, formatter).atStartOfDay());
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException(
+                    "Invalid datetime in the request.　Text " + datetime + " could not be parsed. " +
+                    "The supported format is " + patterns.toString());
         }
     }
 
