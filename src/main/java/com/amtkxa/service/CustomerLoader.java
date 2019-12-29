@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -26,11 +27,11 @@ import com.opencsv.bean.CsvToBeanBuilder;
 
 @Service
 public class CustomerLoader {
-    private static int NUMBER_OB_THREADS = 1;
-    private static int BATCH_SIZE = 1;
-    private static int INSERT_THREADS = 1;
+    private static int NUMBER_OB_THREADS = 2;
+    private static int BATCH_SIZE = 5;
+    private static int INSERT_THREADS = 3;
 
-    public void load(MultipartFile file) {
+    public void load(MultipartFile file, String datetime) {
         try {
             SingleQueueExecutor singleQueueExecutor = new SingleQueueExecutor(
                     NUMBER_OB_THREADS,
@@ -46,10 +47,11 @@ public class CustomerLoader {
             );
             matcherThread.start();
 
-            // database records
+            // Get current database records
+            String businessDate = Optional.ofNullable(datetime).orElse(DateUtil.now().toString());
             CustomerList customerList = CustomerFinder.findMany(
                     CustomerFinder.all()
-                                  .and(CustomerFinder.businessDate().eq(DateUtil.now()))
+                                  .and(CustomerFinder.businessDate().eq(DateUtil.parse(businessDate)))
                                   .and(CustomerFinder.processingDate().equalsInfinity())
             );
 
