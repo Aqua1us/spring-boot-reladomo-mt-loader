@@ -23,7 +23,7 @@ import com.gs.fw.common.mithra.util.QueueExecutor;
 import com.gs.fw.common.mithra.util.SingleQueueExecutor;
 
 public class SingleQueueExecutorTest extends AbstractReladomoTest {
-    private static int NUMBER_OB_THREADS = 2;
+    private static int NUMBER_OF_THREADS = 2;
     private static int BATCH_SIZE = 5;
     private static int INSERT_THREADS = 3;
 
@@ -51,7 +51,7 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
     protected QueueExecutor serialLoad() {
         try {
             QueueExecutor queueExecutor = new SingleQueueExecutor(
-                    NUMBER_OB_THREADS,
+                    NUMBER_OF_THREADS,
                     CustomerFinder.customerId().ascendingOrderBy(),
                     BATCH_SIZE,
                     CustomerFinder.getFinderInstance(),
@@ -87,7 +87,7 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
     protected QueueExecutor parallelLoad() {
         try {
             QueueExecutor queueExecutor = new SingleQueueExecutor(
-                    NUMBER_OB_THREADS,
+                    NUMBER_OF_THREADS,
                     CustomerFinder.customerId().ascendingOrderBy(),
                     BATCH_SIZE,
                     CustomerFinder.getFinderInstance(),

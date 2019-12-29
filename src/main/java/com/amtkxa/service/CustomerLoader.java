@@ -28,14 +28,14 @@ import com.opencsv.bean.CsvToBeanBuilder;
 
 @Service
 public class CustomerLoader {
-    private static int NUMBER_OB_THREADS = 2;
+    private static int NUMBER_OF_THREADS = 2;
     private static int BATCH_SIZE = 5;
     private static int INSERT_THREADS = 3;
 
     public void load(MultipartFile file, String datetime) {
         try {
             QueueExecutor queueExecutor = new SingleQueueExecutor(
-                    NUMBER_OB_THREADS,
+                    NUMBER_OF_THREADS,
                     CustomerFinder.customerId().ascendingOrderBy(),
                     BATCH_SIZE,
                     CustomerFinder.getFinderInstance(),
