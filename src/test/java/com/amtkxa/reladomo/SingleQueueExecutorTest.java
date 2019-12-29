@@ -4,13 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import com.amtkxa.common.exception.ReladomoMTLoaderException;
+import com.amtkxa.common.util.DateFormatter;
 import com.amtkxa.domain.entity.Customer;
 import com.amtkxa.domain.entity.CustomerFinder;
 import com.amtkxa.domain.entity.CustomerList;
@@ -20,7 +19,6 @@ import com.gs.fw.common.mithra.util.QueueExecutor;
 import com.gs.fw.common.mithra.util.SingleQueueExecutor;
 
 public class SingleQueueExecutorTest extends AbstractReladomoTest {
-    private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static int NUMBER_OB_THREADS = 2;
     private static int BATCH_SIZE = 5;
     private static int INSERT_THREADS = 3;
@@ -30,8 +28,8 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
         return new String[] { "testdata/customer_data.txt" };
     }
 
-    private List<Customer> getInputData() throws ParseException {
-        Timestamp businessDate = getTimestamp("2019-12-05 00:00:00");
+    private List<Customer> getInputData() {
+        Timestamp businessDate = DateFormatter.parse("2019-12-05 00:00:00");
         CustomerList customerList = new CustomerList();
         customerList.add(new Customer(7, "Ava", "JPN", businessDate));
         customerList.add(new Customer(8, "Arthur", "USA", businessDate));
@@ -44,10 +42,6 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
                               .and(CustomerFinder.businessDate().equalsEdgePoint())
                               .and(CustomerFinder.processingDate().equalsInfinity())
         );
-    }
-
-    private Timestamp getTimestamp(String date) throws ParseException {
-        return new Timestamp(format.parse(date).getTime());
     }
 
     protected QueueExecutor loadData() {

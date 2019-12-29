@@ -9,7 +9,7 @@ import com.gs.fw.common.mithra.test.ConnectionManagerForTests;
 import com.gs.fw.common.mithra.test.MithraTestResource;
 
 public abstract class AbstractReladomoTest {
-    private static Logger LOGGER = LoggerFactory.getLogger(AbstractReladomoTest.class);
+    private static Logger log = LoggerFactory.getLogger(AbstractReladomoTest.class);
     private MithraTestResource mithraTestResource;
 
     protected abstract String[] getTestDataFilenames();
@@ -20,7 +20,7 @@ public abstract class AbstractReladomoTest {
 
     @BeforeEach
     public void setUp() {
-        LOGGER.info("Setting up reladomo on h2");
+        log.info("Setting up reladomo on h2");
         this.mithraTestResource = new MithraTestResource(this.getMithraConfigXmlFilename());
         ConnectionManagerForTests connectionManager = ConnectionManagerForTests.getInstanceForDbName("testdb");
         this.mithraTestResource.createSingleDatabase(connectionManager);
