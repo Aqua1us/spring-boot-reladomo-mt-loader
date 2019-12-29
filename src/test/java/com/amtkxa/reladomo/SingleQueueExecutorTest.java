@@ -9,7 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.amtkxa.common.exception.ReladomoMTLoaderException;
-import com.amtkxa.common.util.DateFormatter;
+import com.amtkxa.common.util.DateUtil;
 import com.amtkxa.domain.entity.Customer;
 import com.amtkxa.domain.entity.CustomerFinder;
 import com.amtkxa.domain.entity.CustomerList;
@@ -33,7 +33,7 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
     }
 
     private List<Customer> getInputData() {
-        Timestamp businessDate = DateFormatter.parse("2019-12-05 00:00:00");
+        Timestamp businessDate = DateUtil.parse("2019-12-05 00:00:00");
         CustomerList customerList = new CustomerList();
         customerList.add(new Customer(7, "Ava", "JPN", businessDate));
         customerList.add(new Customer(8, "Arthur", "USA", businessDate));
