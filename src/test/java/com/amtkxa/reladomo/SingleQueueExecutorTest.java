@@ -13,8 +13,12 @@ import com.amtkxa.common.util.DateFormatter;
 import com.amtkxa.domain.entity.Customer;
 import com.amtkxa.domain.entity.CustomerFinder;
 import com.amtkxa.domain.entity.CustomerList;
+import com.gs.fw.common.mithra.MithraTransactionalObject;
 import com.gs.fw.common.mithra.extractor.Extractor;
+import com.gs.fw.common.mithra.mtloader.DbLoadThread;
+import com.gs.fw.common.mithra.mtloader.InputLoader;
 import com.gs.fw.common.mithra.mtloader.MatcherThread;
+import com.gs.fw.common.mithra.mtloader.PlainInputThread;
 import com.gs.fw.common.mithra.util.QueueExecutor;
 import com.gs.fw.common.mithra.util.SingleQueueExecutor;
 
@@ -44,7 +48,7 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
         );
     }
 
-    protected QueueExecutor loadData() {
+    protected QueueExecutor serialLoad() {
         try {
             QueueExecutor queueExecutor = new SingleQueueExecutor(
                     NUMBER_OB_THREADS,
@@ -60,11 +64,11 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
             );
             matcherThread.start();
 
-            // database records
+            // Database data load: Serial
             matcherThread.addDbRecords(getDbRecords());
             matcherThread.setDbDone();
 
-            // input data
+            // Input data load: Serial
             matcherThread.addFileRecords(getInputData());
             matcherThread.setFileDone();
             matcherThread.waitTillDone();
@@ -75,9 +79,49 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
     }
 
     @Test
-    public void testLoadData() {
-        QueueExecutor queueExecutor = loadData();
+    public void testLoadDataSerial() {
+        QueueExecutor queueExecutor = serialLoad();
+        checkResult(queueExecutor);
+    }
 
+    protected QueueExecutor parallelLoad() {
+        try {
+            QueueExecutor queueExecutor = new SingleQueueExecutor(
+                    NUMBER_OB_THREADS,
+                    CustomerFinder.customerId().ascendingOrderBy(),
+                    BATCH_SIZE,
+                    CustomerFinder.getFinderInstance(),
+                    INSERT_THREADS
+            );
+
+            MatcherThread<Customer> matcherThread = new MatcherThread<>(
+                    queueExecutor,
+                    new Extractor[] { CustomerFinder.customerId() }
+            );
+            matcherThread.start();
+
+            // Database data load: Parallel
+            DbLoadThread dbLoadThread = new DbLoadThread(getDbRecords(), null, matcherThread);
+            dbLoadThread.start();
+
+            // Input data load: Parallel
+            PlainInputThread inputThread = new PlainInputThread(new InputDataLoader(), matcherThread);
+            inputThread.run();
+
+            matcherThread.waitTillDone();
+            return queueExecutor;
+        } catch (Exception e) {
+            throw new ReladomoMTLoaderException("Failed to load data. " + e.getMessage(), e.getCause());
+        }
+    }
+
+    @Test
+    public void testLoadDataParallel() {
+        QueueExecutor queueExecutor = parallelLoad();
+        checkResult(queueExecutor);
+    }
+
+    private void checkResult(QueueExecutor queueExecutor) {
         // Whatever is in Output Set but not in Input Set will be closed out (terminated).
         CustomerList customerList = getDbRecords();
         assertEquals(2, customerList.count());
@@ -109,5 +153,24 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
                   () -> assertEquals(1, queueExecutor.getTotalUpdates()),
                   () -> assertEquals(6, queueExecutor.getTotalTerminates())
         );
+    }
+
+    private class InputDataLoader implements InputLoader {
+        private boolean firstTime = true;
+
+        @Override
+        public List<? extends MithraTransactionalObject> getNextParsedObjectList() {
+            return getInputData();
+        }
+
+        @Override
+        public boolean isFileParsingComplete() {
+            if (firstTime) {
+                firstTime = false;
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
 }
