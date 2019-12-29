@@ -22,6 +22,7 @@ import com.gs.fw.common.mithra.mtloader.DbLoadThread;
 import com.gs.fw.common.mithra.mtloader.InputLoader;
 import com.gs.fw.common.mithra.mtloader.MatcherThread;
 import com.gs.fw.common.mithra.mtloader.PlainInputThread;
+import com.gs.fw.common.mithra.util.QueueExecutor;
 import com.gs.fw.common.mithra.util.SingleQueueExecutor;
 import com.opencsv.bean.CsvToBeanBuilder;
 
@@ -33,7 +34,7 @@ public class CustomerLoader {
 
     public void load(MultipartFile file, String datetime) {
         try {
-            SingleQueueExecutor singleQueueExecutor = new SingleQueueExecutor(
+            QueueExecutor queueExecutor = new SingleQueueExecutor(
                     NUMBER_OB_THREADS,
                     CustomerFinder.customerId().ascendingOrderBy(),
                     BATCH_SIZE,
@@ -42,7 +43,7 @@ public class CustomerLoader {
             );
 
             MatcherThread<Customer> matcherThread = new MatcherThread<>(
-                    singleQueueExecutor,
+                    queueExecutor,
                     new Extractor[] { CustomerFinder.customerId() }
             );
             matcherThread.start();
