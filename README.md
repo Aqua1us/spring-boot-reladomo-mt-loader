@@ -3,7 +3,7 @@
 
 This is a sample application  that implemented Reladomo's Multi-Threaded matcher Loader (MT Loader).
 
-## Description
+## What is MT loader?
 Multi-Threaded matcher Loader (MTLoader) is a high-performance pattern for merging changes from another source (file, feed, other DB, etc.) to your existing DB data. By design it is flexible/customizable and re-runnable.
 
 ## Run the project
