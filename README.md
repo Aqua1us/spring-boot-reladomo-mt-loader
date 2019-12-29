@@ -3,6 +3,9 @@
 
 This is a sample application  that implemented Reladomo's Multi-Threaded matcher Loader (MT Loader).
 
+## Description
+Multi-Threaded matcher Loader (MTLoader) is a high-performance pattern for merging changes from another source (file, feed, other DB, etc.) to your existing DB data. By design it is flexible/customizable and re-runnable.
+
 ## Run the project
 ### Start a MySQL server instance in Docker container
 ```bash
@@ -22,3 +25,5 @@ $ gradle build
 # start the API server at localhost:8080
 $ java -jar ./build/libs/spring-boot-reladomo-mt-loader-0.0.1-SNAPSHOT.jar 
 ```
+There is a Swagger UI configured for visualizing the REST APIs.<br>
+[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
