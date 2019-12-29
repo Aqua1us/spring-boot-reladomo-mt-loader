@@ -80,7 +80,7 @@ public class CustomerLoader {
         @Override
         public List<? extends MithraTransactionalObject> getNextParsedObjectList() {
             try {
-                // convert csv file to entity list
+                // Convert csv file to entity list
                 List<CustomerCsvEntity> entityList =
                         new CsvToBeanBuilder(new InputStreamReader(file.getInputStream()))
                                 .withType(CustomerCsvEntity.class)
@@ -88,7 +88,7 @@ public class CustomerLoader {
                                 .build()
                                 .parse();
 
-                // convert csv entity to table's entity
+                // Convert csv entity to table's entity
                 Timestamp businessDate = DateUtil.now();
                 return entityList
                         .stream()
