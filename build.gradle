@@ -22,6 +22,7 @@ ext.reladomoVersion = '17.1.4'
 ext.mysqlConnectorVersion = '8.0.18'
 ext.openApiVersion = '1.2.21'
 ext.h2Version = '1.4.200'
+ext.openCsvVersion = '5.0'
 
 dependencies {
     // Spring
@@ -38,8 +39,9 @@ dependencies {
     reladomoGenTask "com.goldmansachs.reladomo:reladomogen:$reladomoVersion"
     reladomoGenTask "com.goldmansachs.reladomo:reladomo-gen-util:$reladomoVersion"
 
-    // Open API
+    // Utils
     implementation "org.springdoc:springdoc-openapi-ui:$openApiVersion"
+    implementation "com.opencsv:opencsv:$openCsvVersion"
 
     // MySQL
     implementation "mysql:mysql-connector-java:$mysqlConnectorVersion"
