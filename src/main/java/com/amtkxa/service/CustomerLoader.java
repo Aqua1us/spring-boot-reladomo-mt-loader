@@ -66,6 +66,7 @@ public class CustomerLoader {
             inputThread.run();
 
             matcherThread.waitTillDone();
+            log.info("The load of {} has been completed.", file.getOriginalFilename());
         } catch (Exception e) {
             throw new ReladomoMTLoaderException("Failed to load data. " + e.getMessage(), e.getCause());
         }
