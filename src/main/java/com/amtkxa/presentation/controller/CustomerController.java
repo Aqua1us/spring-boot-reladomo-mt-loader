@@ -23,13 +23,11 @@ public class CustomerController {
         this.customerLoader = customerLoader;
     }
 
-    @PostMapping(path = "/customer/load",
-            //produces = MediaType.TEXT_PLAIN_VALUE,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path = "/customer/load", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity load(@RequestPart(value = "file") MultipartFile file,
                                @RequestParam(required = false) String datetime) {
-        customerLoader.load(file, DateUtil.parse(Optional.ofNullable(datetime)
-                                                         .orElse(DateUtil.now().toString())
+        customerLoader.load(file, DateUtil.parse(
+                Optional.ofNullable(datetime).orElse(DateUtil.now().toString())
         ));
         return ResponseEntity.status(HttpStatus.OK).body("The uploaded file has been loaded.");
     }
