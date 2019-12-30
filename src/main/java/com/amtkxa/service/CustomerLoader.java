@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amtkxa.common.exception.ReladomoMTLoaderException;
-import com.amtkxa.common.util.DateUtil;
 import com.amtkxa.domain.entity.Customer;
 import com.amtkxa.domain.entity.CustomerFinder;
 import com.amtkxa.domain.entity.CustomerList;
@@ -28,11 +28,12 @@ import com.opencsv.bean.CsvToBeanBuilder;
 
 @Service
 public class CustomerLoader {
+    private static Logger log = LoggerFactory.getLogger(CustomerLoader.class.getName());
     private static int NUMBER_OF_THREADS = 2;
     private static int BATCH_SIZE = 5;
     private static int INSERT_THREADS = 3;
 
-    public void load(MultipartFile file, String datetime) {
+    public void load(MultipartFile file, Timestamp businessDate) {
         try {
             QueueExecutor queueExecutor = new SingleQueueExecutor(
                     NUMBER_OF_THREADS,
@@ -49,10 +50,9 @@ public class CustomerLoader {
             matcherThread.start();
 
             // Get current database records
-            String businessDate = Optional.ofNullable(datetime).orElse(DateUtil.now().toString());
             CustomerList customerList = CustomerFinder.findMany(
                     CustomerFinder.all()
-                                  .and(CustomerFinder.businessDate().eq(DateUtil.parse(businessDate)))
+                                  .and(CustomerFinder.businessDate().eq(businessDate))
                                   .and(CustomerFinder.processingDate().equalsInfinity())
             );
 
@@ -61,7 +61,8 @@ public class CustomerLoader {
             dbLoadThread.start();
 
             // Input data load: Parallel
-            PlainInputThread inputThread = new PlainInputThread(new InputDataLoader(file), matcherThread);
+            PlainInputThread inputThread =
+                    new PlainInputThread(new InputDataLoader(file, businessDate), matcherThread);
             inputThread.run();
 
             matcherThread.waitTillDone();
@@ -72,10 +73,12 @@ public class CustomerLoader {
 
     private class InputDataLoader implements InputLoader {
         private boolean firstTime = true;
+        private Timestamp businessDate;
         private MultipartFile file;
 
-        InputDataLoader(MultipartFile file) {
+        InputDataLoader(MultipartFile file, Timestamp businessDate) {
             this.file = file;
+            this.businessDate = businessDate;
         }
 
         @Override
@@ -88,9 +91,10 @@ public class CustomerLoader {
                                 .withSkipLines(1)
                                 .build()
                                 .parse();
+                log.info("Loading uploaded csv file... filename: {}, line: {}, businessDate: {}",
+                         file.getOriginalFilename(), entityList.size(), businessDate.toString());
 
                 // Convert csv entity to table's entity
-                Timestamp businessDate = DateUtil.now();
                 return entityList
                         .stream()
                         .map(m -> new Customer(m.getCustomerId(), m.getName(), m.getCountry(), businessDate))
