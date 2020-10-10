@@ -20,7 +20,7 @@ $ docker-compose exec mysql bash -c 'mysql -u${MYSQL_USER} -p${MYSQL_PASSWORD} $
 ### Build and run the application
 ```bash
 # install dependencies and build application
-$ gradle build
+$ ./gradlew build
 
 # start the API server at localhost:8080
 $ java -jar ./build/libs/spring-boot-reladomo-mt-loader-0.0.1-SNAPSHOT.jar 
