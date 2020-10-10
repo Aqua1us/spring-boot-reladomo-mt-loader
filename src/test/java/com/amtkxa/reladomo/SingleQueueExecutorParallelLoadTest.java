@@ -35,7 +35,7 @@ public class SingleQueueExecutorParallelLoadTest extends AbstractReladomoTest {
     private List<Customer> getInputData() {
         Timestamp businessDate = DateUtil.parse("2019-12-05 00:00:00");
         CustomerList customerList = new CustomerList();
-        customerList.add(new Customer(7, "Ava", "JPN", businessDate));
+        customerList.add(new Customer(6, "Ava", "JPN", businessDate));
         customerList.add(new Customer(8, "Arthur", "USA", businessDate));
         return customerList;
     }
@@ -87,14 +87,14 @@ public class SingleQueueExecutorParallelLoadTest extends AbstractReladomoTest {
         assertEquals(2, customerList.count());
 
         // Whatever is in the intersection, will be updated (but only if something changed)
-        Customer customer7 = CustomerFinder.findOne(
-                CustomerFinder.customerId().eq(7)
+        Customer customer = CustomerFinder.findOne(
+                CustomerFinder.customerId().eq(6)
                               .and(CustomerFinder.businessDate().equalsEdgePoint())
                               .and(CustomerFinder.processingDate().equalsInfinity())
         );
         assertAll("Check updated customer data",
-                  () -> assertEquals("Ava", customer7.getName()),
-                  () -> assertEquals("JPN", customer7.getCountry()) // Updated from USD to JPN
+                  () -> assertEquals("Ava", customer.getName()),
+                  () -> assertEquals("JPN", customer.getCountry()) // Updated from USD to JPN
         );
 
         // Whatever in in Input Set but not in Output Set will be inserted
