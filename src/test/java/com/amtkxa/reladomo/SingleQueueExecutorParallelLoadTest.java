@@ -22,7 +22,7 @@ import com.gs.fw.common.mithra.mtloader.PlainInputThread;
 import com.gs.fw.common.mithra.util.QueueExecutor;
 import com.gs.fw.common.mithra.util.SingleQueueExecutor;
 
-public class SingleQueueExecutorTest extends AbstractReladomoTest {
+public class SingleQueueExecutorParallelLoadTest extends AbstractReladomoTest {
     private static int NUMBER_OF_THREADS = 2;
     private static int BATCH_SIZE = 5;
     private static int INSERT_THREADS = 3;
@@ -48,43 +48,8 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
         );
     }
 
-    protected QueueExecutor serialLoad() {
-        try {
-            QueueExecutor queueExecutor = new SingleQueueExecutor(
-                    NUMBER_OF_THREADS,
-                    CustomerFinder.customerId().ascendingOrderBy(),
-                    BATCH_SIZE,
-                    CustomerFinder.getFinderInstance(),
-                    INSERT_THREADS
-            );
-
-            MatcherThread<Customer> matcherThread = new MatcherThread<>(
-                    queueExecutor,
-                    new Extractor[] { CustomerFinder.customerId() }
-            );
-            matcherThread.start();
-
-            // Database data load: Serial
-            matcherThread.addDbRecords(getDbRecords());
-            matcherThread.setDbDone();
-
-            // Input data load: Serial
-            matcherThread.addFileRecords(getInputData());
-            matcherThread.setFileDone();
-            matcherThread.waitTillDone();
-            return queueExecutor;
-        } catch (Exception e) {
-            throw new ReladomoMTLoaderException("Failed to load data. " + e.getMessage(), e.getCause());
-        }
-    }
-
     @Test
-    public void testLoadDataSerial() {
-        QueueExecutor queueExecutor = serialLoad();
-        checkResult(queueExecutor);
-    }
-
-    protected QueueExecutor parallelLoad() {
+    public void testLoadDataParallel() {
         try {
             QueueExecutor queueExecutor = new SingleQueueExecutor(
                     NUMBER_OF_THREADS,
@@ -107,18 +72,13 @@ public class SingleQueueExecutorTest extends AbstractReladomoTest {
             // Input data load: Parallel
             PlainInputThread inputThread = new PlainInputThread(new InputDataLoader(), matcherThread);
             inputThread.run();
-
             matcherThread.waitTillDone();
-            return queueExecutor;
+
+            // Assert
+            checkResult(queueExecutor);
         } catch (Exception e) {
             throw new ReladomoMTLoaderException("Failed to load data. " + e.getMessage(), e.getCause());
         }
-    }
-
-    @Test
-    public void testLoadDataParallel() {
-        QueueExecutor queueExecutor = parallelLoad();
-        checkResult(queueExecutor);
     }
 
     private void checkResult(QueueExecutor queueExecutor) {
